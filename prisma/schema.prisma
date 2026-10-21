@@ -37,6 +37,8 @@ model Item {
   bomAsFg  BomLine[] @relation("BomFg")
   bomAsRaw BomLine[] @relation("BomRaw")
 
+  batches ProductionBatch[]
+
   @@map("items")
 }
 
@@ -51,6 +53,25 @@ model BomLine {
 
   @@unique([fgItemId, rawItemId])
   @@map("bom_lines")
+}
+
+model CustomsDocument {
+  id        Int      @id @default(autoincrement())
+  docType   String   @map("doc_type") @db.VarChar(10)
+  docNumber String   @unique @map("doc_number") @db.VarChar(50)
+  docDate   DateTime @map("doc_date") @db.Date
+
+  @@map("customs_documents")
+}
+
+model ProductionBatch {
+  id          Int      @id @default(autoincrement())
+  fgItemId    Int      @map("fg_item_id")
+  qtyProduced Decimal  @map("qty_produced") @db.Decimal(12, 2)
+  producedAt  DateTime @default(now()) @map("produced_at")
+  fgItem      Item     @relation(fields: [fgItemId], references: [id])
+
+  @@map("production_batches")
 }
 
 enum ItemType {
