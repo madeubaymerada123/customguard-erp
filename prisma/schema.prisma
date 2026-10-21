@@ -34,7 +34,23 @@ model Item {
   hsCodeId Int?     @map("hs_code_id")
   hsCode   HsCode?  @relation(fields: [hsCodeId], references: [id])
 
+  bomAsFg  BomLine[] @relation("BomFg")
+  bomAsRaw BomLine[] @relation("BomRaw")
+
   @@map("items")
+}
+
+model BomLine {
+  id         Int     @id @default(autoincrement())
+  fgItemId   Int     @map("fg_item_id")
+  rawItemId  Int     @map("raw_item_id")
+  qtyPerUnit Decimal @map("qty_per_unit") @db.Decimal(12, 4)
+  scrapPct   Decimal @default(0) @map("scrap_pct") @db.Decimal(5, 2)
+  fgItem     Item    @relation("BomFg", fields: [fgItemId], references: [id])
+  rawItem    Item    @relation("BomRaw", fields: [rawItemId], references: [id])
+
+  @@unique([fgItemId, rawItemId])
+  @@map("bom_lines")
 }
 
 enum ItemType {
