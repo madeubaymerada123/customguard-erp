@@ -20,6 +20,25 @@ model HsCode {
   bmRate      Decimal @map("bm_rate") @db.Decimal(5, 2)
   ppnRate     Decimal @map("ppn_rate") @db.Decimal(5, 2)
   pph22Rate   Decimal @map("pph22_rate") @db.Decimal(5, 2)
+  items       Item[]
 
   @@map("hs_codes")
+}
+
+model Item {
+  id       Int      @id @default(autoincrement())
+  sku      String   @unique @db.VarChar(50)
+  name     String
+  itemType ItemType @map("item_type")
+  uom      String   @db.VarChar(10)
+  hsCodeId Int?     @map("hs_code_id")
+  hsCode   HsCode?  @relation(fields: [hsCodeId], references: [id])
+
+  @@map("items")
+}
+
+enum ItemType {
+  RAW
+  FG
+  SCRAP
 }
