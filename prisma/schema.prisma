@@ -37,7 +37,8 @@ model Item {
   bomAsFg  BomLine[] @relation("BomFg")
   bomAsRaw BomLine[] @relation("BomRaw")
 
-  batches ProductionBatch[]
+  batches   ProductionBatch[]
+  movements StockMovement[]
 
   @@map("items")
 }
@@ -61,6 +62,8 @@ model CustomsDocument {
   docNumber String   @unique @map("doc_number") @db.VarChar(50)
   docDate   DateTime @map("doc_date") @db.Date
 
+  movements StockMovement[]
+
   @@map("customs_documents")
 }
 
@@ -71,11 +74,46 @@ model ProductionBatch {
   producedAt  DateTime @default(now()) @map("produced_at")
   fgItem      Item     @relation(fields: [fgItemId], references: [id])
 
+  movements StockMovement[]
+
   @@map("production_batches")
+}
+
+model StockMovement {
+  id           BigInt       @id @default(autoincrement())
+  itemId       Int          @map("item_id")
+  movementType MovementType @map("movement_type")
+  qty          Decimal      @db.Decimal(14, 4)
+  customsDocId Int?         @map("customs_doc_id")
+  batchId      Int?         @map("batch_id")
+  taxStatus    TaxStatus?   @map("tax_status")
+  movedAt      DateTime     @default(now()) @map("moved_at")
+
+  item       Item             @relation(fields: [itemId], references: [id])
+  customsDoc CustomsDocument? @relation(fields: [customsDocId], references: [id])
+  batch      ProductionBatch? @relation(fields: [batchId], references: [id])
+
+  @@index([itemId, movedAt])
+  @@map("stock_movements")
 }
 
 enum ItemType {
   RAW
   FG
   SCRAP
+}
+
+enum MovementType {
+  INBOUND
+  PROD_CONSUME
+  PROD_OUTPUT
+  SCRAP
+  OUTBOUND_EXPORT
+  OUTBOUND_LOCAL
+}
+
+enum TaxStatus {
+  DITANGGUHKAN
+  DIBEBASKAN
+  DIBAYAR
 }
